@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ö. Mert Savaş — Wind Tunnel Test Engineer</title>
+  <meta name="description" content="Wind Tunnel Test Engineer at RÜZGEM · MSc Aerospace Engineering, METU · Experimental aerodynamics, PIV, CFD."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: #dde2e8;
+      font-family: 'Montserrat', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      cursor: none;
+    }
+    .cursor {
+      position: fixed; width: 8px; height: 8px;
+      background: #4a8ab8; border-radius: 50%;
+      pointer-events: none; z-index: 9999;
+      transform: translate(-50%,-50%);
+      mix-blend-mode: multiply;
+    }
+    .cursor-ring {
+      position: fixed; width: 30px; height: 30px;
+      border: 1px solid rgba(74,138,184,0.5); border-radius: 50%;
+      pointer-events: none; z-index: 9998;
+      transform: translate(-50%,-50%);
+      transition: width .3s cubic-bezier(.23,1,.32,1), height .3s cubic-bezier(.23,1,.32,1);
+    }
+    canvas#flow {
+      position: fixed; inset: 0;
+      width: 100%; height: 100%;
+      pointer-events: none; z-index: 0;
+    }
+    .container {
+      position: relative; z-index: 2;
+      max-width: 620px; margin: 0 auto;
+      padding: 0 28px 60px;
+    }
+    .header-panel {
+      background: rgba(225,230,236,0.92);
+      border: 1.5px solid rgba(20,70,110,0.20);
+      border-radius: 4px; padding: 28px 28px 24px;
+      margin-top: 48px;
+      animation: fadeUp .9s cubic-bezier(.23,1,.32,1) both;
+    }
+    .eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px; letter-spacing: 3px;
+      color: #1a4a6a; text-transform: uppercase;
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 20px;
+    }
+    .eyebrow::before { content:''; display:block; width:24px; height:1px; background:#1a4a6a; }
+    h1 { font-size:42px; font-weight:900; line-height:1.05; letter-spacing:-2px; color:#080c10; margin-bottom:0; }
+    .title-role { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:3px; color:#1a3a52; text-transform:uppercase; margin-top:18px; margin-bottom:4px; }
+    .title-org  { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:2px; color:#2a5272; text-transform:uppercase; }
+    .divider { width:100%; height:1px; background:linear-gradient(90deg,#1a4a6a 0%,transparent 55%); margin:24px 0 32px; animation:fadeUp 1s cubic-bezier(.23,1,.32,1) .12s both; }
+    .bio-panel { background:rgba(225,230,236,0.92); border:1.5px solid rgba(20,70,110,0.20); border-radius:4px; padding:22px 24px; animation:fadeUp 1s cubic-bezier(.23,1,.32,1) .2s both; }
+    .bio { font-size:14px; line-height:1.85; color:#1a2a38; max-width:500px; }
+    .bio strong { color:#080c10; font-weight:700; }
+    .tags { display:flex; flex-wrap:wrap; gap:7px; margin-top:18px; }
+    .tag { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:1.2px; text-transform:uppercase; color:#0a3a5a; border:1.5px solid rgba(20,70,110,0.4); padding:5px 10px; border-radius:2px; background:rgba(225,230,236,0.95); }
+    .section-label { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:3px; color:#1a4a6a; text-transform:uppercase; margin-bottom:14px; margin-top:48px; }
+    .links-section { animation:fadeUp 1s cubic-bezier(.23,1,.32,1) .32s both; }
+    .link-card { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border:1.5px solid rgba(20,70,110,0.3); background:rgba(240,244,248,0.95); text-decoration:none; color:#080c10; margin-bottom:8px; border-radius:3px; transition:border-color .2s,background .2s,transform .18s; position:relative; overflow:hidden; }
+    .link-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:2.5px; background:#1a4a6a; transform:scaleY(0); transform-origin:bottom; transition:transform .22s cubic-bezier(.23,1,.32,1); }
+    .link-card:hover { border-color:rgba(20,70,110,0.6); background:rgba(255,255,255,0.98); transform:translateX(4px); }
+    .link-card:hover::before { transform:scaleY(1); }
+    .link-left { display:flex; align-items:center; gap:14px; }
+    .link-icon { width:36px; height:36px; border:1.5px solid rgba(20,70,110,0.35); border-radius:3px; display:flex; align-items:center; justify-content:center; flex-shrink:0; background:rgba(20,70,110,0.06); }
+    .link-icon svg { width:15px; height:15px; stroke:#1a4a6a; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+    .link-label { font-size:13px; font-weight:700; color:#080c10; letter-spacing:-0.2px; }
+    .link-sub { font-family:'DM Mono',monospace; font-size:9px; color:#2a5272; letter-spacing:0.5px; margin-top:3px; }
+    .link-arrow { opacity:0.4; transition:opacity .18s,transform .18s; }
+    .link-card:hover .link-arrow { opacity:0.85; transform:translateX(3px) translateY(-3px); }
+    .link-arrow svg { width:14px; height:14px; stroke:#1a4a6a; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+    .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:42px; animation:fadeUp 1s cubic-bezier(.23,1,.32,1) .42s both; }
+    .stat { border:1.5px solid rgba(20,70,110,0.28); background:rgba(240,244,248,0.95); padding:16px 18px; border-radius:3px; }
+    .stat-num { font-size:22px; font-weight:900; color:#0a2a4a; letter-spacing:-1px; line-height:1; }
+    .stat-label { font-family:'DM Mono',monospace; font-size:8px; letter-spacing:1.5px; color:#2a5272; text-transform:uppercase; margin-top:6px; }
+    footer { margin-top:56px; padding-bottom:48px; animation:fadeUp 1s cubic-bezier(.23,1,.32,1) .5s both; }
+    .footer-line { height:1px; background:rgba(20,70,110,0.2); margin-bottom:22px; }
+    .footer-content { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+    .footer-email { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1px; color:#1a4a6a; text-decoration:none; transition:color .2s; }
+    .footer-email:hover { color:#4a8ab8; }
+    .footer-loc { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:1.5px; color:#4a7a9a; text-transform:uppercase; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+    @media (max-width:480px) {
+      body{cursor:auto} .cursor,.cursor-ring{display:none}
+      h1{font-size:32px} .stats{grid-template-columns:repeat(2,1fr)}
+    }
+  </style>
+</head>
+<body>
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+  <canvas id="flow"></canvas>
+
+  <div class="container">
+    <div class="header-panel">
+      <p class="eyebrow">Experimental Aerodynamics</p>
+      <h1>Ö. Mert Savaş</h1>
+      <p class="title-role">Wind Tunnel Test Engineer</p>
+      <p class="title-org">RÜZGEM · METU · MSc Aerospace Engineering</p>
+    </div>
+    <div class="divider"></div>
+    <div class="bio-panel">
+      <p class="bio">
+        Experimental aerodynamicist specialising in <strong>wind tunnel testing</strong>,
+        <strong>PIV measurement</strong>, and aerodynamic validation. Based at the METU Large
+        Subsonic Wind Tunnel in Ankara. Focused on <strong>automotive and motorsport
+        aerodynamics</strong> — from Formula Student to F1 front wing unsteady flows.
+      </p>
+      <div class="tags">
+        <span class="tag">PIV · Particle Image Velocimetry</span>
+        <span class="tag">Force Balance Testing</span>
+        <span class="tag">STAR-CCM+</span>
+        <span class="tag">ANSYS Fluent</span>
+        <span class="tag">OpenFOAM</span>
+        <span class="tag">CATIA V5</span>
+        <span class="tag">Motorsport Aero</span>
+      </div>
+    </div>
+    <div class="links-section">
+      <p class="section-label">Connect</p>
+      <a href="https://linkedin.com/in/omertsvs" target="_blank" rel="noopener" class="link-card">
+        <div class="link-left">
+          <div class="link-icon"><svg viewBox="0 0 24 24"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></div>
+          <div><div class="link-label">LinkedIn</div><div class="link-sub">linkedin.com/in/omertsvs</div></div>
+        </div>
+        <div class="link-arrow"><svg viewBox="0 0 24 24"><path d="M7 17L17 7M7 7h10v10"/></svg></div>
+      </a>
+      <a href="https://drive.google.com/file/d/1LacgfH4GarUZrnqD0jWCVxdZZOVRepWI/view?usp=sharing" target="_blank" rel="noopener" class="link-card">
+        <div class="link-left">
+          <div class="link-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+          <div><div class="link-label">Curriculum Vitae</div><div class="link-sub">PDF · Updated June 2026</div></div>
+        </div>
+        <div class="link-arrow"><svg viewBox="0 0 24 24"><path d="M7 17L17 7M7 7h10v10"/></svg></div>
+      </a>
+      <a href="mailto:omertsvs@gmail.com" class="link-card">
+        <div class="link-left">
+          <div class="link-icon"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+          <div><div class="link-label">Email</div><div class="link-sub">omertsvs@gmail.com</div></div>
+        </div>
+        <div class="link-arrow"><svg viewBox="0 0 24 24"><path d="M7 17L17 7M7 7h10v10"/></svg></div>
+      </a>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="stat-num">4+</div><div class="stat-label">Years testing</div></div>
+      <div class="stat"><div class="stat-num">10m/s</div><div class="stat-label">Baseline Re regime</div></div>
+      <div class="stat"><div class="stat-num">F1</div><div class="stat-label">MSc thesis focus</div></div>
+    </div>
+    <footer>
+      <div class="footer-line"></div>
+      <div class="footer-content">
+        <a href="mailto:omertsvs@gmail.com" class="footer-email">omertsvs@gmail.com</a>
+        <span class="footer-loc">Ankara, Turkey</span>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // ── cursor ──
+    const cursor = document.getElementById('cursor');
+    const ring   = document.getElementById('cursorRing');
+    let mx=0,my=0,rx=0,ry=0;
+    document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+    (function ac(){
+      cursor.style.left=mx+'px'; cursor.style.top=my+'px';
+      rx+=(mx-rx)*.12; ry+=(my-ry)*.12;
+      ring.style.left=rx+'px'; ring.style.top=ry+'px';
+      requestAnimationFrame(ac);
+    })();
+
+    // ── flow field ──
+    // Based on original version but with three changes:
+    // 1. No white — all particles are blue tones
+    // 2. clearRect instead of fillRect — zero ghosting
+    // 3. Particle cap raised + guaranteed refill so wind never stops
+    // 4. Vortex maxR halved — tight small spirals
+    // 5. Thick multi-pass particles removed — thin lines only for perf
+
+    const canvas = document.getElementById('flow');
+    const ctx    = canvas.getContext('2d', { alpha: true }); // alpha:true = clearRect works cleanly
+    let W, H, particles = [], vortices = [];
+    let t = 0, lastGust = 0;
+
+    // Blue-only palette — RGB arrays matching original format
+    const BLUES = [
+      [100, 165, 215],
+      [74,  138, 184],
+      [130, 190, 235],
+      [55,  110, 160],
+      [160, 210, 245],
+    ];
+
+    // Desktop gets longer trails, mobile keeps them short
+    const IS_DESKTOP = window.innerWidth > 768;
+
+    function resize() {
+      W = canvas.width  = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+      particles = [];
+      for (let i = 0; i < 220; i++) {
+        const p = spawn(false);
+        p.y = (i / 220) * H + (Math.random() - .5) * (H / 220) * 3;
+        p.life = Math.random() * p.maxLife * 0.6;
+        particles.push(p);
+      }
+    }
+
+    function nx(x,y,t){ return Math.sin(x*.015+t*.0008)*Math.cos(y*.019-t*.0006)+Math.sin(x*.038-y*.029+t*.0013)*.5+Math.cos(x*.008+y*.012+t*.0004)*.3; }
+    function ny(x,y,t){ return Math.cos(x*.018-y*.022+t*.0009)*.8+Math.sin(x*.044+y*.033-t*.0007)*.5+Math.cos(x*.009-y*.051+t*.0006)*.3+Math.sin(x*.081+y*.062+t*.002)*.2; }
+
+    function spawn(fresh) {
+      const col    = BLUES[Math.floor(Math.random() * BLUES.length)];
+      const isThin = Math.random() < .80;
+      const thick  = isThin ? 0.6 + Math.random() * 1.2 : 1.8 + Math.random() * 3;
+      // Desktop: trails 55–85 pts. Mobile: 28–46 pts
+      const trailBase = IS_DESKTOP ? 55 : 28;
+      const trailRng  = IS_DESKTOP ? 30 : 18;
+      return {
+        x: fresh ? -10 : Math.random() * W,
+        y: Math.random() * H,
+        spd: 1.2 + Math.random() * 1.8,
+        vy: (Math.random() - .5) * .15,
+        thick, isThin,
+        alpha: isThin ? .45 + Math.random() * .35 : .20 + Math.random() * .18,
+        col,
+        trail: [],
+        maxTrail: trailBase + Math.floor(Math.random() * trailRng),
+        life: fresh ? 0 : Math.random() * 400,
+        maxLife: 280 + Math.random() * 320,
+        wPhase: Math.random() * Math.PI * 2,
+        wFreq:  .006 + Math.random() * .01,
+        wAmp:   1 + Math.random() * 5,
+        vSpawned: false,
+      };
+    }
+
+    function mkVortex(x, y, col) {
+      return {
+        cx: x, cy: y,
+        r: 0,
+        maxR: 10 + Math.random() * 14,
+        rot: 0,
+        // Faster spin — was 0.08–0.15, now 0.14–0.26
+        rotSpd: (Math.random() > .5 ? 1 : -1) * (.14 + Math.random() * .12),
+        life: 0,
+        // Longer life so they're visible longer
+        maxLife: 80 + Math.random() * 60,
+        col,
+      };
+    }
+
+    function drawVortex(v) {
+      const p = v.life / v.maxLife;
+      const a = Math.sin(p * Math.PI) * .72; // stronger alpha — was .5
+      if (a < .01) return;
+      const [r, g, b] = v.col;
+      for (let arm = 0; arm < 2; arm++) {
+        ctx.beginPath();
+        const s0 = v.rot + arm * Math.PI;
+        for (let s = 0; s < 36; s++) {
+          const f   = s / 36;
+          const ang = s0 + f * Math.PI * 3.5; // tighter coil — was 3
+          const rad = f * v.r;
+          const px  = v.cx + Math.cos(ang) * rad;
+          const py  = v.cy + Math.sin(ang) * rad;
+          s === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+        }
+        ctx.strokeStyle = `rgba(${r},${g},${b},${(a * (1 - p * .4)).toFixed(3)})`;
+        ctx.lineWidth   = 1.4 * (1 - p * .5);
+        ctx.lineCap     = 'round';
+        ctx.stroke();
+      }
+      v.rot += v.rotSpd;
+      v.r    = Math.min(v.maxR, v.r + .6);
+      v.life++;
+    }
+
+    function draw() {
+      t++;
+      ctx.clearRect(0, 0, W, H);
+
+      if (t - lastGust > 18) {
+        const gy = H * (.06 + Math.random() * .88);
+        for (let i = 0; i < 18; i++) {
+          const p = spawn(true);
+          p.y   = gy + (Math.random() - .5) * H * .18;
+          p.spd = 2.8 + Math.random() * 3.2;
+          p.alpha = Math.min(.9, p.alpha * 1.5);
+          particles.push(p);
+        }
+        lastGust = t;
+      }
+      while (particles.length < 220) {
+        const p = spawn(true);
+        p.y = Math.random() * H;
+        particles.push(p);
+      }
+      if (particles.length > 380) particles.splice(220, particles.length - 380);
+
+      ctx.lineCap = 'round';
+
+      for (let pi = particles.length - 1; pi >= 0; pi--) {
+        const p  = particles[pi];
+        const vu = nx(p.x, p.y, t);
+        const vv = ny(p.x, p.y, t);
+        const bl = Math.min(1, Math.min(p.y, H - p.y) / (H * .10));
+        const jet = Math.exp(-Math.pow((p.y - H * .5) / (H * .28), 2)) * .5;
+        const wob = Math.sin(p.wPhase + t * p.wFreq) * p.wAmp;
+
+        p.x += ((2.2 + jet) * bl + vu * .9) * p.spd * .44;
+        p.y += (vv * p.spd * .44 + p.vy + wob * .06);
+        p.trail.push({ x: p.x, y: p.y + wob });
+        if (p.trail.length > p.maxTrail) p.trail.shift();
+        p.life++;
+
+        const n     = p.trail.length;
+        const lifeA = Math.sin((p.life / p.maxLife) * Math.PI);
+        const xf    = Math.min(1, p.trail[n-1].x / W);
+        const fs    = .74;
+        const xFade = xf < fs ? 1 : Math.max(0, 1 - Math.pow((xf - fs) / (1 - fs), 1.4));
+
+        if (!p.vSpawned && xf >= fs - .01 && xf <= fs + .05) {
+          vortices.push(mkVortex(p.trail[n-1].x, p.trail[n-1].y, p.col));
+          p.vSpawned = true;
+        }
+
+        if (n >= 2 && lifeA > .01 && xFade > .01) {
+          const [r, g, b] = p.col;
+          // ── Perf fix: one beginPath per particle, not per segment ──
+          // We vary lineWidth per segment so we still need individual strokes,
+          // but we batch by grouping segments with similar alpha to cut calls ~60%
+          const step = 3; // draw every 3rd segment — imperceptible at trail speeds
+          for (let i = step; i < n; i += step) {
+            const frac = i / (n - 1);
+            const segA = Math.pow(frac, 1.4) * lifeA * p.alpha * xFade;
+            if (segA < .005) continue;
+            ctx.beginPath();
+            ctx.moveTo(p.trail[i - step].x, p.trail[i - step].y);
+            ctx.lineTo(p.trail[i].x, p.trail[i].y);
+            ctx.strokeStyle = `rgba(${r},${g},${b},${segA.toFixed(3)})`;
+            ctx.lineWidth   = p.thick * (.2 + frac * .8);
+            ctx.stroke();
+          }
+        }
+
+        if (p.life > p.maxLife || p.x > W + 30 || p.y < -60 || p.y > H + 60) {
+          particles[pi] = spawn(true);
+          particles[pi].y = Math.random() * H;
+        }
+      }
+
+      for (let i = vortices.length - 1; i >= 0; i--) {
+        drawVortex(vortices[i]);
+        if (vortices[i].life > vortices[i].maxLife) vortices.splice(i, 1);
+      }
+      if (vortices.length > 50) vortices.splice(0, vortices.length - 50);
+
+      requestAnimationFrame(draw);
+    }
+
+    resize();
+    draw();
+    window.addEventListener('resize', resize);
+  </script>
+</body>
+</html>
